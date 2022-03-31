@@ -1,0 +1,9 @@
+groups:
+- name: slack-alerts
+  rules:
+  - alert: ServerDown
+    expr: SERVER_DOWN > 10
+    for: 1m
+    annotations:
+      title: "Instance {{ $labels.id  }} down"
+      description: "{{ $labels.reason }}"

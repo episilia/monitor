@@ -1,0 +1,24 @@
+global:
+  resolve_timeout: 1m
+  slack_api_url: <slack_webhook_url>
+
+route:
+  receiver: 'slack'
+
+receivers:
+  - name: 'slack'
+    slack_configs:
+      - send_resolved: false
+        username: "Epislia"
+        title: |-
+          [{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] {{ .CommonLabels.alertname }}
+        text: >-
+          {{ range .Alerts -}}
+          *Alert:* {{ .Annotations.title }}{{ if .Labels.severity }} - `{{ .Labels.severity }}`{{ end }}
+          {{- "\n" -}}
+          *Description:* {{ .Annotations.description }}
+          {{- "\n" -}}
+          *Details:*
+            {{ range .Labels.SortedPairs }} *{{ .Name }}:* `{{ .Value }}`
+            {{ end }}
+          {{ end }}
