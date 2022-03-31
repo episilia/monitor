@@ -1,0 +1,22 @@
+global:
+  scrape_interval:     5s
+  evaluation_interval: 5s
+
+# Load and evaluate rules in this file every 'evaluation_interval' seconds.
+rule_files:
+  - "alert.rules"
+
+# A scrape configuration containing exactly one endpoint to scrape.
+scrape_configs:
+  - job_name: 'cpanel'
+    static_configs:
+      - targets: ['<public_ip>:8090']
+
+  - job_name: 'alert'
+    static_configs:
+      - targets: ['<public_ip>:5070']
+
+alerting:
+  alertmanagers:
+  - static_configs:
+      - targets: ['<public_ip>:5060']
