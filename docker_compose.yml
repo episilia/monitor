@@ -1,0 +1,72 @@
+version: '3.4'
+
+networks:
+  infra-kaf:
+    driver: overlay
+
+services:
+
+  grafana:
+    image: docker.io/grafana/grafana:8.0.5-ubuntu
+    container_name: grafana
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - PUBLIC_IP=<node_ip>
+    restart: unless-stopped
+    network_mode: host
+    ports:
+      - "80:3000"
+    networks:
+      - infra-kaf
+
+  prometheus:
+    image: prom/prometheus:v2.17.1
+    container_name: prometheus
+    volumes:
+      - ./prometheus:/etc/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.enable-admin-api'
+      - '--web.listen-address=:5050'
+    restart: unless-stopped
+    network_mode: host
+    ports:
+      - "5050:5050"
+    networks:
+      - infra-kaf
+
+  alertmanager:
+    image: prom/alertmanager:v0.20.0
+    container_name: alertmanager
+    volumes:
+      - ./alertmanager:/etc/alertmanager
+    command:
+      - '--config.file=/etc/alertmanager/config.yml'
+      - '--storage.path=/alertmanager'
+      - '--web.listen-address=:5060'
+    restart: unless-stopped
+    network_mode: host
+    ports:
+      - "5060:5060"
+    networks:
+      - infra-kaf
+
+  pushgateway:
+    image: prom/pushgateway:v1.2.0
+    container_name: pushgateway
+    command:
+      - '--web.listen-address=:5070'
+    restart: unless-stopped
+    network_mode: host
+    ports:
+      - "5070:5070"
+    networks:
+      - infra-kaf
+
+
+
